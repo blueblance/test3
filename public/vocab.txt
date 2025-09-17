@@ -1,0 +1,11 @@
+# word | zh-meaning | initial_missing_letters
+elaborate | 詳細說明；精心製作 | 1
+brisk | 活潑的；輕快的 | 1
+curious | 好奇的 | 1
+adventure | 冒險；奇遇 | 1
+carefree | 無憂無慮的 | 1
+harmony | 和諧；融洽 | 1
+marvelous | 令人驚嘆的；不可思議的 | 1
+resourceful | 足智多謀的 | 1
+sprinkle | 灑落；點綴 | 1
+whisper | 低聲說；耳語 | 1

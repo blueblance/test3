@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>單字練習小幫手</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="scoreboard">
+      <div class="score-item">
+        <span class="label">目前分數</span>
+        <span id="current-score" class="value">0</span>
+      </div>
+      <div class="score-item">
+        <span class="label">最高分</span>
+        <span id="high-score" class="value">0</span>
+      </div>
+      <div class="score-item">
+        <span class="label">連續答對</span>
+        <span id="streak" class="value">0</span>
+      </div>
+      <div class="score-item">
+        <span class="label">已練習單字</span>
+        <span id="words-played" class="value">0</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" id="question-card">
+        <h1>單字練習</h1>
+        <p class="meaning" id="word-meaning">載入中...</p>
+        <div class="masked-word" id="masked-word">——</div>
+        <div class="answer-area">
+          <label for="answer-input" class="sr-only">請輸入缺少的字母</label>
+          <input
+            id="answer-input"
+            type="text"
+            autocomplete="off"
+            placeholder="在這裡輸入英文"
+          />
+          <button id="submit-answer">送出答案</button>
+          <button id="reveal-answer" class="ghost">顯示完整單字</button>
+        </div>
+        <p class="feedback" id="feedback"></p>
+        <button id="next-question" class="primary" disabled>下一題</button>
+      </section>
+
+      <section class="card" id="settings-card">
+        <h2>題庫設定</h2>
+        <p>目前使用的題庫會自動儲存在您的瀏覽器中。</p>
+        <div class="upload-group">
+          <label for="vocab-file">上傳新的單字題庫（TXT）</label>
+          <input id="vocab-file" type="file" accept=".txt" />
+        </div>
+        <button id="reset-progress" class="ghost">重設練習紀錄</button>
+        <button id="download-vocab" class="ghost">下載目前題庫</button>
+        <p class="hint">
+          TXT 格式：<code>英文單字 | 中文解釋 | 初始缺字數</code>，每行一筆。
+          以 <code>#</code> 開頭的行會被忽略。
+        </p>
+      </section>
+    </main>
+
+    <template id="word-template">
+      <div class="masked-word"></div>
+    </template>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>
