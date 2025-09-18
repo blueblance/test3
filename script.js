@@ -35,6 +35,119 @@ const ui = {
   downloadBtn: document.getElementById('download-vocab'),
 };
 
+// Fun sound effects and celebrations
+const celebrations = [
+  '🎉 太棒了！',
+  '⭐ 好厲害！',
+  '🏆 答對了！',
+  '✨ 很棒！',
+  '🎊 做得好！',
+  '🌟 超讚的！',
+  '🎈 好聪明！'
+];
+
+const encouragements = [
+  '💪 再試一次！',
+  '🤔 仔細想想！',
+  '📚 慢慢來！',
+  '🌈 別放棄！',
+  '🎯 加油！',
+  '💡 你可以的！'
+];
+
+function playSuccessSound() {
+  // Using Web Audio API to create simple success tone
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (e) {
+    console.log('Audio not supported');
+  }
+}
+
+function playErrorSound() {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+    oscillator.type = 'sawtooth';
+    
+    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  } catch (e) {
+    console.log('Audio not supported');
+  }
+}
+
+function triggerCelebration() {
+  // Add confetti-like effect
+  const colors = ['#ff6b9d', '#ffd93d', '#4299e1', '#9f7aea', '#48bb78'];
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement('div');
+      confetti.style.cssText = `
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        left: ${Math.random() * 100}vw;
+        top: -10px;
+        animation: confettiFall 2s ease-out forwards;
+      `;
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => confetti.remove(), 2000);
+    }, i * 50);
+  }
+  
+  // Add CSS animation if not already present
+  if (!document.getElementById('confetti-styles')) {
+    const style = document.createElement('style');
+    style.id = 'confetti-styles';
+    style.textContent = `
+      @keyframes confettiFall {
+        to {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+function animateScoreIncrease(element) {
+  element.classList.add('animate-score');
+  setTimeout(() => {
+    element.classList.remove('animate-score');
+  }, 600);
+}
+
 const state = {
   vocabulary: [],
   rawVocabText: '',
@@ -270,12 +383,24 @@ function handleCorrect() {
     setHighScore(state.score);
   }
 
-  ui.feedback.textContent = `答對了！+${reward} 分`;
+  // Fun celebration effects
+  const celebration = celebrations[Math.floor(Math.random() * celebrations.length)];
+  ui.feedback.textContent = `${celebration} +${reward} 分`;
   ui.feedback.className = 'feedback success';
   ui.nextBtn.disabled = false;
   ui.maskedWord.textContent = spacedWord(item.word);
   setChoiceButtonsDisabled(true);
   highlightCorrectChoice();
+
+  // Trigger fun effects
+  playSuccessSound();
+  if (state.streak >= 3) {
+    triggerCelebration();
+  }
+  animateScoreIncrease(ui.score.parentElement);
+  if (state.streak > 1) {
+    animateScoreIncrease(ui.streak.parentElement);
+  }
 
   updateScoreboard();
 }
@@ -290,8 +415,14 @@ function handleIncorrect() {
   progress.currentMissing = clampMissing(progress.currentMissing - 1, item);
   saveProgress();
 
-  ui.feedback.textContent = '差一點點，再試一次！';
+  // Fun encouragement messages
+  const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+  ui.feedback.textContent = encouragement;
   ui.feedback.className = 'feedback error';
+  
+  // Play gentle error sound
+  playErrorSound();
+  
   updateScoreboard();
 }
 
