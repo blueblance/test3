@@ -56,7 +56,22 @@ const encouragements = [
 ];
 
 function playSuccessSound() {
-  // Using Web Audio API to create simple success tone
+  try {
+    const audio = new Audio('public/audio/good.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(e => {
+      console.log('Failed to play success sound:', e);
+      // Fallback to Web Audio API
+      playFallbackSuccessSound();
+    });
+  } catch (e) {
+    console.log('Audio not supported, using fallback');
+    playFallbackSuccessSound();
+  }
+}
+
+function playFallbackSuccessSound() {
+  // Using Web Audio API to create simple success tone as fallback
   try {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -75,11 +90,26 @@ function playSuccessSound() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
   } catch (e) {
-    console.log('Audio not supported');
+    console.log('Fallback audio not supported');
   }
 }
 
 function playErrorSound() {
+  try {
+    const audio = new Audio('public/audio/fail.mp3');
+    audio.volume = 0.5;
+    audio.play().catch(e => {
+      console.log('Failed to play error sound:', e);
+      // Fallback to Web Audio API
+      playFallbackErrorSound();
+    });
+  } catch (e) {
+    console.log('Audio not supported, using fallback');
+    playFallbackErrorSound();
+  }
+}
+
+function playFallbackErrorSound() {
   try {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -97,7 +127,7 @@ function playErrorSound() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.2);
   } catch (e) {
-    console.log('Audio not supported');
+    console.log('Fallback audio not supported');
   }
 }
 

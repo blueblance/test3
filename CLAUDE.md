@@ -64,6 +64,14 @@ elaborate | 詳細說明；精心製作 | 1
 
 Lines starting with `#` are treated as comments and ignored.
 
+### Audio System
+
+The application supports custom audio files for enhanced user experience:
+- `public/audio/good.mp3` - Success sound when answer is correct
+- `public/audio/fail.mp3` - Error sound when answer is incorrect
+- Fallback to Web Audio API generated tones if MP3 files are unavailable
+- Volume set to 50% for comfortable listening
+
 ### Storage Keys
 
 The application uses localStorage with versioned keys:
