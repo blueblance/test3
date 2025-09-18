@@ -72,6 +72,28 @@ The application supports custom audio files for enhanced user experience:
 - Fallback to Web Audio API generated tones if MP3 files are unavailable
 - Volume set to 50% for comfortable listening
 
+### Level System
+
+The application features a gamified level progression system to engage elementary students:
+- **Level Images**: `public/pic/level0.png` through `level4.png` (supports PNG/JPG)
+- **Level Progression**: Every 200 points advances one level (max level 4)
+- **Experience Bar**: Visual progress indicator showing advancement toward next level
+- **Level-up Celebrations**: Special animations, confetti effects, and sound when leveling up
+- **Responsive Design**: Level display adapts to mobile/tablet interfaces
+
+**Level Calculation**:
+- Level 0: 0-199 points
+- Level 1: 200-399 points  
+- Level 2: 400-599 points
+- Level 3: 600-799 points
+- Level 4: 800+ points (max level)
+
+**Visual Elements**:
+- Animated level avatar with hover effects
+- Rainbow gradient progress bar with shine animation
+- Level-up pulse animations and celebration effects
+- Mobile-optimized sizing and layout
+
 ### Storage Keys
 
 The application uses localStorage with versioned keys:

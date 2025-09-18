@@ -33,6 +33,12 @@ const ui = {
   fileInput: document.getElementById('vocab-file'),
   resetBtn: document.getElementById('reset-progress'),
   downloadBtn: document.getElementById('download-vocab'),
+  // Level system elements
+  levelImage: document.getElementById('level-image'),
+  currentLevel: document.getElementById('current-level'),
+  experienceFill: document.getElementById('experience-fill'),
+  experienceCurrent: document.getElementById('experience-current'),
+  experienceTarget: document.getElementById('experience-target'),
 };
 
 // Fun sound effects and celebrations
@@ -176,6 +182,90 @@ function animateScoreIncrease(element) {
   setTimeout(() => {
     element.classList.remove('animate-score');
   }, 600);
+}
+
+// Level System Functions
+function calculateLevel(score) {
+  return Math.min(Math.floor(score / 200), 4);
+}
+
+function calculateExperience(score) {
+  const currentLevel = calculateLevel(score);
+  const baseExp = currentLevel * 200;
+  const currentExp = score - baseExp;
+  const targetExp = currentLevel >= 4 ? 200 : 200;
+  return { current: currentExp, target: targetExp };
+}
+
+function updateLevelDisplay() {
+  const level = calculateLevel(state.score);
+  const experience = calculateExperience(state.score);
+  
+  // Update level number
+  ui.currentLevel.textContent = level;
+  
+  // Update level image with fallback
+  const imageExtensions = ['png', 'jpg', 'jpeg'];
+  let imageLoaded = false;
+  
+  for (const ext of imageExtensions) {
+    const img = new Image();
+    img.onload = function() {
+      if (!imageLoaded) {
+        ui.levelImage.src = `public/pic/level${level}.${ext}`;
+        ui.levelImage.alt = `Level ${level}`;
+        imageLoaded = true;
+      }
+    };
+    img.src = `public/pic/level${level}.${ext}`;
+  }
+  
+  // Update experience bar
+  const expPercentage = level >= 4 ? 100 : (experience.current / experience.target) * 100;
+  ui.experienceFill.style.width = `${expPercentage}%`;
+  ui.experienceCurrent.textContent = level >= 4 ? 'MAX' : experience.current;
+  ui.experienceTarget.textContent = level >= 4 ? 'MAX' : experience.target;
+}
+
+function checkLevelUp(oldScore, newScore) {
+  const oldLevel = calculateLevel(oldScore);
+  const newLevel = calculateLevel(newScore);
+  
+  if (newLevel > oldLevel) {
+    triggerLevelUpCelebration(newLevel);
+    return true;
+  }
+  return false;
+}
+
+function triggerLevelUpCelebration(newLevel) {
+  // Level up visual effects
+  ui.levelImage.classList.add('level-up');
+  document.querySelector('.level-info').classList.add('level-up-celebration');
+  
+  // Special confetti for level up
+  triggerCelebration();
+  
+  // Show level up message
+  const levelUpMessages = [
+    `🎉 升級了！現在是 ${newLevel} 級！`,
+    `⭐ 太棒了！達到 ${newLevel} 級！`,
+    `🏆 恭喜升級到 ${newLevel} 級！`,
+    `🎊 厲害！你已經是 ${newLevel} 級了！`
+  ];
+  
+  const message = levelUpMessages[Math.floor(Math.random() * levelUpMessages.length)];
+  ui.feedback.textContent = message;
+  ui.feedback.className = 'feedback success';
+  
+  // Play success sound
+  playSuccessSound();
+  
+  // Remove animations after delay
+  setTimeout(() => {
+    ui.levelImage.classList.remove('level-up');
+    document.querySelector('.level-info').classList.remove('level-up-celebration');
+  }, 1500);
 }
 
 const state = {
@@ -390,11 +480,13 @@ function updateScoreboard() {
   ui.score.textContent = state.score;
   ui.streak.textContent = state.streak;
   ui.wordsPlayed.textContent = state.totalCorrect;
+  updateLevelDisplay();
 }
 
 function handleCorrect() {
   const { item, progress } = state.currentItem;
   const reward = 10 + state.maskedIndices.length * 2;
+  const oldScore = state.score;
 
   state.score += reward;
   state.streak += 1;
@@ -413,20 +505,27 @@ function handleCorrect() {
     setHighScore(state.score);
   }
 
-  // Fun celebration effects
-  const celebration = celebrations[Math.floor(Math.random() * celebrations.length)];
-  ui.feedback.textContent = `${celebration} +${reward} 分`;
-  ui.feedback.className = 'feedback success';
+  // Check for level up
+  const leveledUp = checkLevelUp(oldScore, state.score);
+  
+  if (!leveledUp) {
+    // Normal celebration effects (level up celebration is handled in triggerLevelUpCelebration)
+    const celebration = celebrations[Math.floor(Math.random() * celebrations.length)];
+    ui.feedback.textContent = `${celebration} +${reward} 分`;
+    ui.feedback.className = 'feedback success';
+    
+    // Trigger fun effects
+    playSuccessSound();
+    if (state.streak >= 3) {
+      triggerCelebration();
+    }
+  }
+  
   ui.nextBtn.disabled = false;
   ui.maskedWord.textContent = spacedWord(item.word);
   setChoiceButtonsDisabled(true);
   highlightCorrectChoice();
 
-  // Trigger fun effects
-  playSuccessSound();
-  if (state.streak >= 3) {
-    triggerCelebration();
-  }
   animateScoreIncrease(ui.score.parentElement);
   if (state.streak > 1) {
     animateScoreIncrease(ui.streak.parentElement);

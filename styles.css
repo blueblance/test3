@@ -125,6 +125,162 @@ header.scoreboard {
   text-shadow: 0 2px 4px rgba(255, 107, 157, 0.3);
 }
 
+/* Level Display System */
+.level-display {
+  width: min(960px, 100%);
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.level-info {
+  background: linear-gradient(145deg, var(--card-bg), #f8fafc);
+  border-radius: 20px;
+  border: 3px solid var(--accent);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 8px 25px rgba(255, 211, 61, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.level-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--fun-green), var(--accent), var(--primary), var(--fun-blue));
+  background-size: 200% 100%;
+  animation: rainbow 4s linear infinite;
+}
+
+.level-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid var(--primary);
+  object-fit: cover;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+}
+
+.level-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+}
+
+.level-avatar.level-up {
+  animation: levelUpPulse 1s ease;
+}
+
+@keyframes levelUpPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(255, 211, 61, 0.8); }
+  100% { transform: scale(1); }
+}
+
+.level-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.level-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.level-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.level-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-shadow: 0 2px 4px rgba(255, 107, 157, 0.3);
+  min-width: 2rem;
+  text-align: center;
+}
+
+.experience-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.experience-bar {
+  height: 12px;
+  background: linear-gradient(145deg, #e2e8f0, #cbd5e0);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid var(--fun-blue);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.experience-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--fun-green), var(--accent), var(--primary));
+  border-radius: 20px;
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.experience-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: experienceShine 2s ease-in-out infinite;
+}
+
+@keyframes experienceShine {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.experience-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+#experience-current {
+  color: var(--primary);
+}
+
+#experience-target {
+  color: var(--fun-blue);
+}
+
+/* Level up celebration effect */
+.level-up-celebration {
+  animation: levelUpCelebration 1.5s ease-out;
+}
+
+@keyframes levelUpCelebration {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-2deg); }
+  50% { transform: scale(1.05) rotate(2deg); }
+  75% { transform: scale(1.08) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
 main {
   width: min(960px, 100%);
   display: grid;
@@ -507,5 +663,37 @@ code {
 
   h2 {
     font-size: 1.3rem;
+  }
+
+  /* Level display mobile styles */
+  .level-display {
+    margin-bottom: 1rem;
+  }
+
+  .level-info {
+    padding: 0.8rem;
+    gap: 0.8rem;
+  }
+
+  .level-avatar {
+    width: 60px;
+    height: 60px;
+    border-width: 3px;
+  }
+
+  .level-label {
+    font-size: 1rem;
+  }
+
+  .level-number {
+    font-size: 1.5rem;
+  }
+
+  .experience-bar {
+    height: 10px;
+  }
+
+  .experience-text {
+    font-size: 0.8rem;
   }
 }
