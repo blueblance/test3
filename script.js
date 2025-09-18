@@ -17,11 +17,12 @@ const STORAGE_KEYS = {
   totalCorrect: 'vocabTotalCorrectV1',
 };
 
+const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
+
 const ui = {
   meaning: document.getElementById('word-meaning'),
   maskedWord: document.getElementById('masked-word'),
-  answerInput: document.getElementById('answer-input'),
-  submitBtn: document.getElementById('submit-answer'),
+  choiceContainer: document.getElementById('choice-container'),
   revealBtn: document.getElementById('reveal-answer'),
   nextBtn: document.getElementById('next-question'),
   feedback: document.getElementById('feedback'),
@@ -40,6 +41,8 @@ const state = {
   progressMap: new Map(),
   currentItem: null,
   maskedIndices: [],
+  choiceButtons: [],
+  questionLocked: false,
   score: 0,
   streak: 0,
   totalCorrect: Number(localStorage.getItem(STORAGE_KEYS.totalCorrect) || 0),
@@ -171,9 +174,17 @@ function prepareQuestion(item) {
 
   const indices = selectMissingIndices(item.word, missingCount);
   const maskedWord = maskWord(item.word, indices);
+  const missingLetters = indices.map(index => item.word[index]).join('');
 
-  state.currentItem = { item, progress, maskedWord, missingIndices: indices };
+  state.currentItem = {
+    item,
+    progress,
+    maskedWord,
+    missingIndices: indices,
+    missingLetters,
+  };
   state.maskedIndices = indices;
+  state.questionLocked = false;
 
   renderQuestion();
 }
@@ -185,6 +196,10 @@ function selectMissingIndices(word, missingCount) {
     if (i === 0 || i === word.length - 1) continue;
     if (!/[a-z]/i.test(word[i])) continue;
     available.push(i);
+  }
+
+  if (available.length === 0) {
+    return [];
   }
 
   const maxSelectable = Math.max(Math.min(missingCount, available.length), 1);
@@ -210,37 +225,28 @@ function renderQuestion() {
   if (!current) return;
 
   ui.meaning.textContent = current.item.meaning;
+  if (current.missingLetters.length === 0) {
+    ui.maskedWord.textContent = spacedWord(current.item.word);
+    ui.feedback.textContent = '這個單字沒有可填入的空格，已直接顯示答案。';
+    ui.feedback.className = 'feedback';
+    ui.nextBtn.disabled = false;
+    state.questionLocked = true;
+    ui.choiceContainer.innerHTML = '';
+    state.choiceButtons = [];
+    return;
+  }
+
   ui.maskedWord.textContent = current.maskedWord;
   ui.feedback.textContent = '';
   ui.feedback.className = 'feedback';
-  ui.answerInput.value = '';
-  ui.answerInput.disabled = false;
-  ui.submitBtn.disabled = false;
   ui.nextBtn.disabled = true;
-  ui.answerInput.focus();
+  renderChoices();
 }
 
 function updateScoreboard() {
   ui.score.textContent = state.score;
   ui.streak.textContent = state.streak;
   ui.wordsPlayed.textContent = state.totalCorrect;
-}
-
-function handleSubmit() {
-  if (!state.currentItem) return;
-  const userInput = ui.answerInput.value.trim();
-  if (!userInput) {
-    ui.feedback.textContent = '請先輸入你的答案喔！';
-    ui.feedback.className = 'feedback';
-    return;
-  }
-
-  const answer = state.currentItem.item.word;
-  if (userInput.toLowerCase() === answer.toLowerCase()) {
-    handleCorrect();
-  } else {
-    handleIncorrect();
-  }
 }
 
 function handleCorrect() {
@@ -266,10 +272,10 @@ function handleCorrect() {
 
   ui.feedback.textContent = `答對了！+${reward} 分`;
   ui.feedback.className = 'feedback success';
-  ui.answerInput.disabled = true;
-  ui.submitBtn.disabled = true;
   ui.nextBtn.disabled = false;
   ui.maskedWord.textContent = spacedWord(item.word);
+  setChoiceButtonsDisabled(true);
+  highlightCorrectChoice();
 
   updateScoreboard();
 }
@@ -311,9 +317,10 @@ function handleReveal() {
   ui.maskedWord.textContent = spacedWord(item.word);
   ui.feedback.textContent = `完整單字：${item.word}`;
   ui.feedback.className = 'feedback';
-  ui.answerInput.disabled = true;
-  ui.submitBtn.disabled = true;
   ui.nextBtn.disabled = false;
+  setChoiceButtonsDisabled(true);
+  highlightCorrectChoice();
+  state.questionLocked = true;
   updateScoreboard();
 }
 
@@ -398,14 +405,95 @@ function handleDownloadVocab() {
   URL.revokeObjectURL(url);
 }
 
-function attachEvents() {
-  ui.submitBtn.addEventListener('click', handleSubmit);
-  ui.answerInput.addEventListener('keydown', event => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleSubmit();
+function renderChoices() {
+  if (!state.currentItem) return;
+
+  const correct = state.currentItem.missingLetters.toLowerCase();
+  if (correct.length === 0) {
+    ui.choiceContainer.innerHTML = '';
+    state.choiceButtons = [];
+    return;
+  }
+  const options = generateChoiceOptions(correct);
+  ui.choiceContainer.innerHTML = '';
+  state.choiceButtons = [];
+
+  options.forEach(option => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'choice-button';
+    button.textContent = option.toUpperCase();
+    button.dataset.value = option;
+    button.addEventListener('click', () => handleChoiceSelection(option, button));
+    ui.choiceContainer.appendChild(button);
+    state.choiceButtons.push(button);
+  });
+}
+
+function generateChoiceOptions(correct) {
+  if (!correct || correct.length === 0) {
+    return [];
+  }
+  const choices = new Set([correct]);
+  const length = correct.length;
+
+  while (choices.size < 4) {
+    let candidate = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * ALPHABET.length);
+      candidate += ALPHABET[randomIndex];
+    }
+    if (candidate === correct) continue;
+    choices.add(candidate);
+  }
+
+  return shuffleArray([...choices]);
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function handleChoiceSelection(option, button) {
+  if (!state.currentItem) return;
+  if (state.questionLocked) return;
+
+  const normalized = option.toLowerCase();
+  const correct = state.currentItem.missingLetters.toLowerCase();
+
+  if (normalized === correct) {
+    state.questionLocked = true;
+    button.classList.add('choice-button--correct');
+    handleCorrect();
+  } else {
+    button.disabled = true;
+    button.classList.add('choice-button--incorrect');
+    handleIncorrect();
+  }
+}
+
+function setChoiceButtonsDisabled(disabled) {
+  state.choiceButtons.forEach(button => {
+    button.disabled = disabled;
+  });
+}
+
+function highlightCorrectChoice() {
+  const correct = state.currentItem?.missingLetters.toLowerCase();
+  if (!correct) return;
+
+  state.choiceButtons.forEach(button => {
+    if (button.dataset.value === correct) {
+      button.classList.add('choice-button--correct');
     }
   });
+}
+
+function attachEvents() {
   ui.nextBtn.addEventListener('click', handleNextQuestion);
   ui.revealBtn.addEventListener('click', handleReveal);
   ui.resetBtn.addEventListener('click', handleResetProgress);

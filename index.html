@@ -32,14 +32,13 @@
         <p class="meaning" id="word-meaning">載入中...</p>
         <div class="masked-word" id="masked-word">——</div>
         <div class="answer-area">
-          <label for="answer-input" class="sr-only">請輸入缺少的字母</label>
-          <input
-            id="answer-input"
-            type="text"
-            autocomplete="off"
-            placeholder="在這裡輸入英文"
-          />
-          <button id="submit-answer">送出答案</button>
+          <p class="answer-instruction">請從下列選項中選出缺少的字母。</p>
+          <div
+            id="choice-container"
+            class="choice-grid"
+            role="group"
+            aria-label="選擇缺少的字母"
+          ></div>
           <button id="reveal-answer" class="ghost">顯示完整單字</button>
         </div>
         <p class="feedback" id="feedback"></p>
