@@ -33,6 +33,11 @@ const ui = {
   fileInput: document.getElementById('vocab-file'),
   resetBtn: document.getElementById('reset-progress'),
   downloadBtn: document.getElementById('download-vocab'),
+  showVocabBtn: document.getElementById('show-vocab'),
+  vocabModal: document.getElementById('vocab-modal'),
+  vocabList: document.getElementById('vocab-list'),
+  closeVocabBtn: document.getElementById('close-vocab'),
+  vocabCount: document.getElementById('vocab-count'),
   // Level system elements
   levelImage: document.getElementById('level-image'),
   currentLevel: document.getElementById('current-level'),
@@ -330,11 +335,13 @@ async function loadVocabulary() {
     ui.meaning.textContent = '題庫為空，請上傳新的題庫。';
     state.vocabulary = [];
     state.rawVocabText = sourceText;
+    refreshVocabModalIfOpen();
     return;
   }
 
   state.vocabulary = parsed;
   state.rawVocabText = sourceText;
+  refreshVocabModalIfOpen();
 }
 
 function parseVocabulary(text) {
@@ -626,6 +633,7 @@ function handleFileUpload(event) {
     state.score = 0;
     state.streak = 0;
     state.totalCorrect = 0;
+    refreshVocabModalIfOpen();
 
     localStorage.setItem(STORAGE_KEYS.customVocab, text);
     localStorage.removeItem(STORAGE_KEYS.progress);
@@ -663,6 +671,92 @@ function handleDownloadVocab() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+function renderVocabList() {
+  if (!ui.vocabList) return;
+
+  const sorted = [...state.vocabulary].sort((a, b) =>
+    a.word.localeCompare(b.word, 'zh-Hant', { sensitivity: 'base' })
+  );
+
+  ui.vocabList.innerHTML = '';
+
+  if (sorted.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'vocab-modal__empty';
+    empty.textContent = '目前沒有單字可以顯示，請先載入題庫。';
+    ui.vocabList.appendChild(empty);
+    if (ui.vocabCount) {
+      ui.vocabCount.textContent = '0';
+    }
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  sorted.forEach(({ word, meaning }) => {
+    const entry = document.createElement('div');
+    entry.className = 'vocab-entry';
+    entry.setAttribute('role', 'listitem');
+
+    const wordSpan = document.createElement('span');
+    wordSpan.className = 'vocab-entry__word';
+    wordSpan.textContent = word;
+
+    const meaningSpan = document.createElement('span');
+    meaningSpan.className = 'vocab-entry__meaning';
+    meaningSpan.textContent = meaning;
+
+    entry.append(wordSpan, meaningSpan);
+    fragment.appendChild(entry);
+  });
+
+  ui.vocabList.appendChild(fragment);
+  if (ui.vocabCount) {
+    ui.vocabCount.textContent = String(sorted.length);
+  }
+}
+
+function openVocabModal() {
+  if (!state.vocabulary.length) {
+    ui.feedback.textContent = '目前沒有可顯示的單字，請先載入題庫。';
+    ui.feedback.className = 'feedback';
+    return;
+  }
+
+  renderVocabList();
+  if (ui.vocabModal) {
+    ui.vocabModal.classList.add('show');
+    ui.vocabModal.setAttribute('aria-hidden', 'false');
+  }
+  if (ui.showVocabBtn) {
+    ui.showVocabBtn.setAttribute('aria-expanded', 'true');
+  }
+  ui.closeVocabBtn?.focus();
+}
+
+function closeVocabModal() {
+  if (ui.vocabModal) {
+    ui.vocabModal.classList.remove('show');
+    ui.vocabModal.setAttribute('aria-hidden', 'true');
+  }
+  if (ui.showVocabBtn) {
+    ui.showVocabBtn.setAttribute('aria-expanded', 'false');
+    ui.showVocabBtn.focus();
+  }
+}
+
+function refreshVocabModalIfOpen() {
+  if (ui.vocabModal?.classList.contains('show')) {
+    renderVocabList();
+  }
+}
+
+function handleModalKeydown(event) {
+  if (event.key !== 'Escape' && event.key !== 'Esc') return;
+  if (ui.vocabModal?.classList.contains('show')) {
+    closeVocabModal();
+  }
 }
 
 function renderChoices() {
@@ -759,6 +853,14 @@ function attachEvents() {
   ui.resetBtn.addEventListener('click', handleResetProgress);
   ui.fileInput.addEventListener('change', handleFileUpload);
   ui.downloadBtn.addEventListener('click', handleDownloadVocab);
+  ui.showVocabBtn?.addEventListener('click', openVocabModal);
+  ui.closeVocabBtn?.addEventListener('click', closeVocabModal);
+  ui.vocabModal?.addEventListener('click', event => {
+    if (event.target === ui.vocabModal) {
+      closeVocabModal();
+    }
+  });
+  document.addEventListener('keydown', handleModalKeydown);
 }
 
 async function init() {
