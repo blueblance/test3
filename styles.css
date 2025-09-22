@@ -520,6 +520,100 @@ button.ghost:hover:not(:disabled) {
   box-shadow: 0 8px 20px rgba(159, 122, 234, 0.3);
 }
 
+button.ghost.small {
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  min-height: auto;
+}
+
+.vocab-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(45, 55, 72, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.vocab-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vocab-modal {
+  width: min(720px, 100%);
+  max-height: 80vh;
+  background: var(--card-bg);
+  border-radius: 24px;
+  border: 4px solid var(--fun-blue);
+  box-shadow: 0 24px 60px rgba(66, 153, 225, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.vocab-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.5rem 0.5rem;
+}
+
+.vocab-modal__count {
+  margin: 0;
+  padding: 0 1.5rem 0.8rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.vocab-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.vocab-modal__empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  background: linear-gradient(145deg, #f7fafc, #edf2f7);
+  border-radius: 16px;
+  border: 1px dashed rgba(66, 153, 225, 0.4);
+}
+
+.vocab-entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(145deg, #f7fafc, #edf2f7);
+  border-radius: 16px;
+  border: 1px solid rgba(66, 153, 225, 0.25);
+  box-shadow: 0 6px 16px rgba(66, 153, 225, 0.15);
+}
+
+.vocab-entry__word {
+  font-weight: 700;
+  color: var(--fun-blue);
+  font-size: 1.1rem;
+}
+
+.vocab-entry__meaning {
+  flex: 1 1 260px;
+  color: var(--text-main);
+}
+
 button:hover:not(:disabled) {
   transform: translateY(-1px);
 }
@@ -695,5 +789,21 @@ code {
 
   .experience-text {
     font-size: 0.8rem;
+  }
+
+  .vocab-modal {
+    width: min(100%, 520px);
+  }
+
+  .vocab-modal__body {
+    padding: 0 1rem 1rem;
+  }
+
+  .vocab-entry {
+    padding: 0.75rem;
+  }
+
+  .vocab-entry__meaning {
+    flex-basis: 100%;
   }
 }

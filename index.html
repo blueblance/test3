@@ -74,6 +74,15 @@
         </div>
         <button id="reset-progress" class="ghost">🔄 重設練習紀錄</button>
         <button id="download-vocab" class="ghost">💾 下載目前題庫</button>
+        <button
+          id="show-vocab"
+          class="ghost"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          type="button"
+        >
+          📚 查看全部單字
+        </button>
         <p class="hint">
           TXT 格式：<code>英文單字 | 中文解釋 | 初始缺字數</code>，每行一筆。
           以 <code>#</code> 開頭的行會被忽略。
@@ -84,6 +93,31 @@
     <template id="word-template">
       <div class="masked-word"></div>
     </template>
+
+    <div
+      id="vocab-modal"
+      class="vocab-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="vocab-modal-title"
+      aria-hidden="true"
+    >
+      <div class="vocab-modal">
+        <div class="vocab-modal__header">
+          <h3 id="vocab-modal-title">📚 目前題庫單字</h3>
+          <button id="close-vocab" class="ghost small" type="button">✖️ 關閉</button>
+        </div>
+        <p class="vocab-modal__count">
+          共 <span id="vocab-count">0</span> 個單字
+        </p>
+        <div
+          id="vocab-list"
+          class="vocab-modal__body"
+          role="list"
+          aria-live="polite"
+        ></div>
+      </div>
+    </div>
 
     <script src="script.js" type="module"></script>
   </body>
